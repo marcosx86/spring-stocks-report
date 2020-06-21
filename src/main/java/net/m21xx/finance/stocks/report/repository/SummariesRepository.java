@@ -1,6 +1,7 @@
 package net.m21xx.finance.stocks.report.repository;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
@@ -42,6 +43,22 @@ public class SummariesRepository extends AbstractRepository<Summary, Integer> {
 		System.out.println(String.format("<== getSummaryBeforeDate = %s", res));
 		
 		return res;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Summary> getActiveStocksSummaries() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" from ");
+		sb.append(getClazz().getName());
+		sb.append(" as a where 1 not in (select 1 from ");
+		sb.append(getClazz().getName());
+		sb.append(" as b where b.stock = a.stock");
+		sb.append(" and b.date > a.date)");
+		sb.append(" and a.count > 0 ");
+		
+		Query qry = getEntityManager().createQuery(sb.toString(), Summary.class);
+		
+		return qry.getResultList();
 	}
 
 }

@@ -53,9 +53,9 @@ public class Summary implements BaseModel<Integer> {
 		
 		Optional.of(date).ifPresent(val -> sb.append(String.format(", date = %s", val)));
 		Optional.of(stock).ifPresent(val -> sb.append(String.format(", stock = %s", val)));
-		Optional.of(count).ifPresent(val -> sb.append(String.format(", count = %s", val)));
-		Optional.of(averagePrice).ifPresent(val -> sb.append(String.format(", averagePrice = %s", val)));
-		Optional.of(dayTrade).ifPresent(val -> sb.append(String.format(", dayTrade = %s", val)));
+		Optional.of(count).ifPresent(val -> sb.append(String.format(", count = %d", val)));
+		Optional.of(averagePrice).ifPresent(val -> sb.append(String.format(", averagePrice = %5.4f", val)));
+		Optional.of(dayTrade).ifPresent(val -> sb.append(String.format(", dayTrade = %s", val ? "yes" : "no")));
 		
 		sb.append("]");
 		

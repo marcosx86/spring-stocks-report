@@ -3,12 +3,15 @@ package net.m21xx.finance.stocks.report.service;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -215,8 +218,34 @@ public class B3ReportLoader {
 	}
 	
 	public void printEverything() {
+		List<Summary> summaries = summariesRepo.getActiveStocksSummaries();
 		
+		for (Summary summ : summaries) {
+			System.out.println(summ);
+		}
 		
+		taxesRepo.setOrderBy(" date ASC ");
+		List<Tax> taxes = taxesRepo.findAll();
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/yyyy");
+		Map<String, Double> map = new HashMap<String, Double>();
+		for (Tax tax : taxes) {
+			String mesAno = sdf.format(tax.getDate());
+			Double dbl;
+			if (map.containsKey(mesAno)) {
+				dbl = map.get(mesAno);
+			}
+			else {
+				dbl = 0D;
+			}
+			dbl += tax.getDuePrice().doubleValue();
+			map.put(mesAno, dbl);
+		}
+		
+		for (String key : map.keySet()) {
+			Double dbl = map.get(key);
+			System.out.println(String.format("For %s your due is %5.4f", key, dbl));
+		}
 	}
 
 }
