@@ -18,10 +18,6 @@ public class OrdersRepository extends AbstractRepository<Order, Integer> {
 		setClazz(Order.class);
 	}
 	
-	public void putOrder(Order order) {
-		
-	}
-
 	@SuppressWarnings("unchecked")
 	public List<Date> findAllOrderDates() {
 		StringBuilder sb = new StringBuilder();

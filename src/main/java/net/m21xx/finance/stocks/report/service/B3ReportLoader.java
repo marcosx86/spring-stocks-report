@@ -3,6 +3,8 @@ package net.m21xx.finance.stocks.report.service;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -11,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,7 +106,7 @@ public class B3ReportLoader {
 	private String parseStockSymbol(String pSymbol) {
 		StringBuilder sb = new StringBuilder();
 		
-		Pattern pat = Pattern.compile("([A-Za-z]+[0-9]+)(F)?");
+		Pattern pat = Pattern.compile("([A-Za-z0-9]{4}[0-9]+)(F)?");
 		Matcher match = pat.matcher(pSymbol.trim());
 		if (match.matches() && match.groupCount() > 1) {
 			sb.append(match.group(1));
@@ -245,6 +248,18 @@ public class B3ReportLoader {
 		for (String key : map.keySet()) {
 			Double dbl = map.get(key);
 			System.out.println(String.format("For %s your due is %5.4f", key, dbl));
+		}
+		
+		SimpleDateFormat fmtDate = new SimpleDateFormat("dd/MM/yyyy");
+		DecimalFormat fmtPrice = new DecimalFormat("#,##0.00",
+				new DecimalFormatSymbols(new Locale("pt", "BR")));
+		ordersRepo.setOrderBy(" date ASC, ordertype ASC ");
+		List<Order> orders = ordersRepo.findAll();
+		for (Order order : orders) {
+			System.out.println(String.format("%s,%s,\"%s\",%d,%s,0", order.getStock().toUpperCase(),
+					fmtDate.format(order.getDate()), fmtPrice.format(order.getPrice().doubleValue()),
+					order.getCount(), OrderType.COMPRA.equals(order.getOrderType()) ? 
+							"Compra" : "Venda"));
 		}
 	}
 
