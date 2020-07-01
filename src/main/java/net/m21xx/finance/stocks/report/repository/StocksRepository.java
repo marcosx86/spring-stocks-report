@@ -3,9 +3,12 @@ package net.m21xx.finance.stocks.report.repository;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
+import org.springframework.stereotype.Repository;
+
 import net.m21xx.finance.stocks.report.model.Stock;
 import net.m21xx.finance.stocks.report.repository.generics.AbstractRepository;
 
+@Repository
 public class StocksRepository extends AbstractRepository<Stock, Integer> {
 
 	public StocksRepository() {

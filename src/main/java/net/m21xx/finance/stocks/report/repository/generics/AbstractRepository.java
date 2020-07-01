@@ -49,18 +49,17 @@ public abstract class AbstractRepository<T extends BaseModel<ID>, ID> implements
 		entityManager.flush();
 	}
 	
-	public T update(T obj) {
+	public T merge(T obj) {
 		return entityManager.merge(obj);
 	}
 	
-	public T persistOrUpdate(T obj) {
-		if (obj.getId() != null) {
+	public T persistOrMerge(T obj) {
+		if (obj.getId() == null) {
 			persist(obj);
-			// TODO depurar e verificar se o ID está preenchido
 			return obj;
 		}
 		else {
-			return update(obj);
+			return merge(obj);
 		}
 	}
 

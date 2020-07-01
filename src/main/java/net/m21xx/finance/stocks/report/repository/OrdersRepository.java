@@ -60,4 +60,15 @@ public class OrdersRepository extends AbstractRepository<Order, Integer> {
 		return qry.getResultList();
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<String> getAllStockSymbols() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" select distinct stock from ");
+		sb.append(getClazz().getName());
+		
+		Query qry = getEntityManager().createQuery(sb.toString(), String.class);
+		
+		return qry.getResultList();
+	}
+
 }

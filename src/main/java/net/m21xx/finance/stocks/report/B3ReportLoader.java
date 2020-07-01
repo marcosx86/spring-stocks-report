@@ -4,16 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.transaction.Transactional;
 
@@ -32,12 +28,11 @@ import net.m21xx.finance.stocks.report.model.Tax;
 import net.m21xx.finance.stocks.report.repository.OrdersRepository;
 import net.m21xx.finance.stocks.report.repository.SummariesRepository;
 import net.m21xx.finance.stocks.report.repository.TaxesRepository;
+import net.m21xx.finance.stocks.report.util.Util;
 
 @Service
 public class B3ReportLoader {
 
-	private DateTimeFormatter dmyFmt = DateTimeFormatter.ofPattern("dd/MM/yy");
-	
 	@Autowired
 	private OrdersRepository ordersRepo;
 
@@ -50,6 +45,8 @@ public class B3ReportLoader {
 	@Transactional
 	public void pushReport(String pFilename) {
 		try {
+			DateTimeFormatter dmyFmt = DateTimeFormatter.ofPattern("dd/MM/yy");
+			
 			File file = new File(pFilename);
 			
 			Workbook workbook = WorkbookFactory.create(file);
@@ -68,13 +65,13 @@ public class B3ReportLoader {
 					else {
 						Order order = new Order();
 						
-						order.setDate(convertStringToDate(row.getCell(1).toString()));
+						order.setDate(Util.convertStringToDate(row.getCell(1).toString(), dmyFmt));
 						order.setOrderType(OrderType.fromString(row.getCell(3).toString().trim()));
 						order.setCount(new Double(row.getCell(8).getNumericCellValue()).intValue());
-						order.setStock(parseStockSymbol(row.getCell(6).toString()));
+						order.setStock(Util.parseStockSymbol(row.getCell(6).toString()));
 						order.setPrice(BigDecimal.valueOf(row.getCell(9).getNumericCellValue()));
 						
-						ordersRepo.persistOrUpdate(order);
+						ordersRepo.persistOrMerge(order);
 					}
 				}
 				else {
@@ -99,24 +96,6 @@ public class B3ReportLoader {
 //			return new BigDecimal(0);
 //		}
 //	}
-
-	private String parseStockSymbol(String pSymbol) {
-		StringBuilder sb = new StringBuilder();
-		
-		Pattern pat = Pattern.compile("([A-Za-z0-9]{4}[0-9]+)(F)?");
-		Matcher match = pat.matcher(pSymbol.trim());
-		if (match.matches() && match.groupCount() > 1) {
-			sb.append(match.group(1));
-		}
-		
-		return sb.toString();
-	}
-
-	private Date convertStringToDate(String pDateString) {
-		LocalDate orderDate = LocalDate.parse(pDateString.trim(), dmyFmt);
-		Date dt = (Date.from(orderDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-		return dt;
-	}
 
 	@Transactional
 	public void summarizeOrders() {
@@ -204,12 +183,12 @@ public class B3ReportLoader {
 						System.out.println(String.format("-------> For this day trade, exchange retained %5.4f, and you additional 19%% is %5.4f", 
 								retainedValue, dueValue));
 						
-						taxesRepo.persistOrUpdate(tax);
+						taxesRepo.persistOrMerge(tax);
 					}
 				}
 				
 				todaySummary.setCount(finalCount);
-				summariesRepo.persistOrUpdate(todaySummary);
+				summariesRepo.persistOrMerge(todaySummary);
 				
 				System.out.println(String.format("---> %s status is %d papers @ %5.4f, with $ %5.4f", stock, finalCount, averagePrice,
 						finalCount * averagePrice));

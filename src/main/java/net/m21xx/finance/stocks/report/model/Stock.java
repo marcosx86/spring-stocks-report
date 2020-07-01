@@ -15,16 +15,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data @NoArgsConstructor @AllArgsConstructor
-@Entity @Table(name = Order.TABLE_NAME)
-@SequenceGenerator(name = "seq_stocks", sequenceName = "seqOrders")
+@Entity @Table(name = Stock.TABLE_NAME)
+@SequenceGenerator(name = "seq_stocks", sequenceName = "seqStocks")
 public class Stock implements BaseModel<Integer> {
 
-	public static final String TABLE_NAME = "orders";
+	public static final String TABLE_NAME = "stocks";
 	
 	private static final long serialVersionUID = 1L;
 	
 	@Id
-	@GeneratedValue(generator = "seqOrders")
+	@GeneratedValue(generator = "seqStocks")
 	@Column(name = "id", nullable = false)	
 	private Integer id;
 	
