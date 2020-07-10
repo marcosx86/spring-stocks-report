@@ -1,5 +1,8 @@
 package net.m21xx.finance.stocks.report;
 
+import java.io.File;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -8,6 +11,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import net.m21xx.finance.stocks.report.quartz.SchedulerService;
+import net.m21xx.finance.stocks.report.service.ReportParserService;
+import net.m21xx.finance.stocks.report.util.Util;
 
 @SpringBootApplication
 public class FinanceStocksReport {
@@ -20,20 +25,30 @@ public class FinanceStocksReport {
 	private B3ReportLoader reportLoader;
 	
 	@Autowired
-	private SchedulerService schedulerService;
+	private ReportParserService reportParser;
+	
+//	@Autowired
+//	private SchedulerService schedulerService;
 	
 	@Bean
 	public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
-		schedulerService.startAllSchedulers();
-		
 		return args -> {
-			for (String str : args) {
-				reportLoader.pushReport(str);
+			List<String> files = Util.searchForFilenames(
+					"C:\\Users\\marco\\OneDrive\\Documentos\\Finanças\\Notas Corretagem Inter\\2020\\", 
+					".xls");
+			
+			for (String str : files) {
+				File file = new File(str);
+
+//				reportParser.parseCeiReport(file);
+				reportParser.parseInterReport(file, Util.parseDateFromInterFilename(str));
 			}
 			
 			reportLoader.summarizeOrders();
 			
-//			reportLoader.printEverything();
+			reportLoader.printEverything();
+			
+//			schedulerService.startAllSchedulers();
 		};
 	}
 

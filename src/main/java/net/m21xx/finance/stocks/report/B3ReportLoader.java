@@ -1,23 +1,14 @@
 package net.m21xx.finance.stocks.report;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.transaction.Transactional;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +19,6 @@ import net.m21xx.finance.stocks.report.model.Tax;
 import net.m21xx.finance.stocks.report.repository.OrdersRepository;
 import net.m21xx.finance.stocks.report.repository.SummariesRepository;
 import net.m21xx.finance.stocks.report.repository.TaxesRepository;
-import net.m21xx.finance.stocks.report.util.Util;
 
 @Service
 public class B3ReportLoader {
@@ -41,61 +31,6 @@ public class B3ReportLoader {
 
 	@Autowired
 	private TaxesRepository taxesRepo;
-
-	@Transactional
-	public void pushReport(String pFilename) {
-		try {
-			DateTimeFormatter dmyFmt = DateTimeFormatter.ofPattern("dd/MM/yy");
-			
-			File file = new File(pFilename);
-			
-			Workbook workbook = WorkbookFactory.create(file);
-			Sheet sheet = workbook.getSheetAt(0);
-			
-			Iterator<Row> itRow = sheet.rowIterator();
-			boolean start = false;
-			while (itRow.hasNext()) {
-				Row row = itRow.next();
-				
-				if (start) {
-					Cell cell = row.getCell(3);
-					if ("".equals(cell.getStringCellValue())) {
-						break;
-					}
-					else {
-						Order order = new Order();
-						
-						order.setDate(Util.convertStringToDate(row.getCell(1).toString(), dmyFmt));
-						order.setOrderType(OrderType.fromString(row.getCell(3).toString().trim()));
-						order.setCount(new Double(row.getCell(8).getNumericCellValue()).intValue());
-						order.setStock(Util.parseStockSymbol(row.getCell(6).toString()));
-						order.setPrice(BigDecimal.valueOf(row.getCell(9).getNumericCellValue()));
-						
-						ordersRepo.persistOrMerge(order);
-					}
-				}
-				else {
-					Cell cell = row.getCell(1);
-					if ("Data Negócio".equals(cell.getStringCellValue())) {
-						start = true;
-						continue;
-					}
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}	
-	}
-
-//	private BigDecimal parseStringToNumber(String pNumberString) {
-//		NumberFormat numFmt = NumberFormat.getInstance();
-//		try {
-//			return BigDecimal.valueOf(numFmt.parse(pNumberString.trim()).doubleValue());
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//			return new BigDecimal(0);
-//		}
-//	}
 
 	@Transactional
 	public void summarizeOrders() {
